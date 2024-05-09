@@ -1,0 +1,10 @@
+* {
+    padding: 0px;
+    margin: 0px;
+    transition: all 1s ease-in-out;
+    overflow: hidden;
+}
+
+canvas {
+    display: block;
+}
