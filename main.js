@@ -135,13 +135,13 @@ if (gl === null) {
         mat4.rotate(
             modelViewMatrix, // destination matrix
             modelViewMatrix, // matrix to rotate
-            cubeRotation*0.7, // amount to rotate in radians
+            cubeRotation, // amount to rotate in radians
             [0, 1, 0],
         );
         mat4.rotate(
             modelViewMatrix, // destination matrix
             modelViewMatrix, // matrix to rotate
-            cubeRotation*0.3, // amount to rotate in radians
+            cubeRotation, // amount to rotate in radians
             [1, 0, 0],
         );
         clearScreen();
@@ -156,6 +156,5 @@ if (gl === null) {
             modelViewMatrix,
         );
         drawQuad([0.5,0.5,0.5],[0.5,-0.5,0.5],[-0.5,0.5,-0.5],[-0.5,-0.5,-0.5]);
-
     },0);
 }

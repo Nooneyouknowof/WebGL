@@ -35,4 +35,5 @@
 
 ## Resources/Credits:
 - Inspiration > FinalForEach YouTube > https://www.youtube.com/watch?v=fz3Td2zlgro&list=PLQcPl5F2pPBMjxJNU6IuRG71-DQod42Rt
+- Fragement/Vertex Shader > https://www.youtube.com/watch?v=3mfvZ-mdtZQ
 - Greedy Mesher > https://www.youtube.com/watch?v=qnGoGq7DWMc
