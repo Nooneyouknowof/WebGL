@@ -102,59 +102,7 @@ if (gl === null) {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     }
 
-    const programInfo = {
-        program: program,
-        attribLocations: {
-        vertexPosition: gl.getAttribLocation(program, "aVertexPosition"),
-        },
-        uniformLocations: {
-        projectionMatrix: gl.getUniformLocation(program, "uProjectionMatrix"),
-        modelViewMatrix: gl.getUniformLocation(program, "uModelViewMatrix"),
-        },
-    };
-    let cubeRotation = 0.0;
-    const fieldOfView = (45 * Math.PI) / 180; // in radians
-    const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
-    const zNear = 0.1;
-    const zFar = 100.0;
-    const projectionMatrix = mat4.create();
-    mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
     setInterval(() => {
-        let modelViewMatrix = mat4.create();
-        mat4.translate(
-            modelViewMatrix, // destination matrix
-            modelViewMatrix, // matrix to translate
-            [0.0, 0.0, 0.0], // amount to translate
-        );
-        mat4.rotate(
-            modelViewMatrix, // destination matrix
-            modelViewMatrix, // matrix to rotate
-            cubeRotation, // amount to rotate in radians
-            [0, 0, 1],
-        );
-        mat4.rotate(
-            modelViewMatrix, // destination matrix
-            modelViewMatrix, // matrix to rotate
-            cubeRotation, // amount to rotate in radians
-            [0, 1, 0],
-        );
-        mat4.rotate(
-            modelViewMatrix, // destination matrix
-            modelViewMatrix, // matrix to rotate
-            cubeRotation, // amount to rotate in radians
-            [1, 0, 0],
-        );
-        clearScreen();
-        gl.uniformMatrix4fv(
-            programInfo.uniformLocations.projectionMatrix,
-            false,
-            projectionMatrix,
-        );
-        gl.uniformMatrix4fv(
-            programInfo.uniformLocations.modelViewMatrix,
-            false,
-            modelViewMatrix,
-        );
-        drawQuad([0.5,0.5,0.5],[0.5,-0.5,0.5],[-0.5,0.5,-0.5],[-0.5,-0.5,-0.5]);
+        // drawQuad([0.5,0.5,0.5],[0.5,-0.5,0.5],[-0.5,0.5,-0.5],[-0.5,-0.5,-0.5]);
     },0);
 }
