@@ -22,12 +22,13 @@
     </script>
     <script type="x-shader/x-fragment" id="fragment">
         void main() {
-            gl_FragColor = vec4(0.0);
+            gl_FragColor = vec4(1.0);
         }
     </script>
     <script type="module" src="main.js" defer></script>
 </head>
 <body>
+    <p style="position: absolute; left: 1rem; top: 1rem; color: white;">FPS: <span id="fps">0</span></p>
     <canvas id="screen"></canvas>
 </body>
 </html> 

@@ -102,6 +102,19 @@ if (gl === null) {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     }
 
+    let p_time = new Date().getTime();
+    let fps_n = 0;
+    function fps() {
+        let c_time = new Date().getTime();
+        let time = c_time-p_time;
+        p_time = new Date().getTime();
+        fps_n = Math.pow(time/1000, -1)
+    }
+
+    setInterval(() => {
+        document.getElementById("fps").textContent = Math.round(fps_n);
+    },1000);
+
     setInterval(() => {
         // drawQuad([0.5,0.5,0.5],[0.5,-0.5,0.5],[-0.5,0.5,-0.5],[-0.5,-0.5,-0.5]);
     },0);
