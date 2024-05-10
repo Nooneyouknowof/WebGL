@@ -24,7 +24,7 @@ if (gl === null) {
     gl.shaderSource(fragmentShader, fragmentCode.trim());
     gl.compileShader(fragmentShader);
     if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
-    throw gl.getShaderInfoLog(fragmentShader);
+        throw gl.getShaderInfoLog(fragmentShader);
     }
 
     const program = gl.createProgram();
@@ -32,7 +32,7 @@ if (gl === null) {
     gl.attachShader(program, fragmentShader);
     gl.linkProgram(program);
     if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-    throw gl.getProgramInfoLog(program);
+        throw gl.getProgramInfoLog(program);
     }
     gl.useProgram(program);
 
@@ -76,7 +76,7 @@ if (gl === null) {
         let vertexData = new Float32Array(vertices?.flat());
         gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
         gl.bufferData(gl.ARRAY_BUFFER, vertexData, gl.STATIC_DRAW);
-        const vertexPosition = gl.getAttribLocation(program, "vertexPosition");
+        const vertexPosition = gl.getAttribLocation(program, "aPosition");
         gl.enableVertexAttribArray(vertexPosition);
         gl.vertexAttribPointer(vertexPosition, 3, gl.FLOAT, false, 0, 0);
         gl.drawArrays(gl.TRIANGLES, 0, vertices.length);
@@ -87,7 +87,7 @@ if (gl === null) {
         let vertexData = new Float32Array(vertices?.flat());
         gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
         gl.bufferData(gl.ARRAY_BUFFER, vertexData, gl.STATIC_DRAW);
-        const vertexPosition = gl.getAttribLocation(program, "vertexPosition");
+        const vertexPosition = gl.getAttribLocation(program, "aPosition");
         gl.enableVertexAttribArray(vertexPosition);
         gl.vertexAttribPointer(vertexPosition, 3, gl.FLOAT, false, 0, 0);
         gl.drawArrays(gl.TRIANGLES, 0, vertices.length);
@@ -95,11 +95,6 @@ if (gl === null) {
 
     function drawCube(x,y,z) {
 
-    }
-
-    function clearScreen() {
-        gl.clearColor(0.0, 0.0, 0.0, 1.0);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     }
 
     let p_time = new Date().getTime();
@@ -116,6 +111,9 @@ if (gl === null) {
     },1000);
 
     setInterval(() => {
-        // drawQuad([0.5,0.5,0.5],[0.5,-0.5,0.5],[-0.5,0.5,-0.5],[-0.5,-0.5,-0.5]);
+        fps()
+        gl.clearColor(0.0, 0.0, 0.0, 1.0);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        drawQuad([0.5,0.5,0.5],[0.5,-0.5,0.5],[-0.5,0.5,-0.5],[-0.5,-0.5,-0.5]);
     },0);
 }
