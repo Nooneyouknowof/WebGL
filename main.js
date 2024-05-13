@@ -127,12 +127,13 @@ if (gl === null) {
     },500);
 
     setInterval(() => {
-        fps()
+        let t = (new Date().getTime()/1000)%(Math.PI*2);
+        fps();
         gl.clearColor(0.0, 0.0, 0.0, 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         //[0,0,0],[1,0,0],[1,1,0],[0,1,0] BR BL TL TR
         //TL TR BR BL
-        drawQuad([0,1,0],[1,1,0],[1,0,1],[0,0,1]);
+        drawQuad([0,1,(Math.sin(t)+1)/2],[1,1,(Math.sin(-t)+1)/2],[1,0,(Math.sin(-t)+1)/2],[0,0,(Math.sin(t)+1)/2]);
     },0);
     // gl.getAttribLocation(program, "");
     // gl.getUniformLocation(program, "");
