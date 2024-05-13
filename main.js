@@ -36,10 +36,6 @@ if (gl === null) {
     }
     gl.useProgram(program);
 
-    let global = {
-        width: 0,
-        height: 0
-    }
 
     let camera = {
         posX: 0,
@@ -48,7 +44,8 @@ if (gl === null) {
         rotateX: 0,
         rotateY: 0,
         rotateZ: 0,
-        FOV: 90
+        FOV: 90,
+        ratio: 1
     }
 
     function resizeCanvas() {
@@ -56,45 +53,64 @@ if (gl === null) {
         let height = window.innerHeight;
         canvas.width = width;
         canvas.height = height;
-        global.width = width;
-        global.height = height;
+        camera.ratio = width/height;
         gl.viewport(0, 0, canvas.width, canvas.height);
     }
     window.addEventListener("resize", resizeCanvas);
     resizeCanvas();
 
-    function vwF(vec3) {
-        return [vec3[0]*global.height/global.width,vec3[1],vec3[2]]
-    }
-
-    function avwF(arr) {
-        return arr.map(item=>vwF(item))
-    }
-
-    function drawTriangle(a,b,c) {
-        let vertices = avwF([a,b,c]);
+    function drawTriangle(a,b,c,isInverted) {
+        let vertices = [a,b,c];
         let vertexData = new Float32Array(vertices?.flat());
         gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
         gl.bufferData(gl.ARRAY_BUFFER, vertexData, gl.STATIC_DRAW);
         const vertexPosition = gl.getAttribLocation(program, "aPosition");
+        const aTexCoordLocation = gl.getAttribLocation(program, "aTexCoord");
+        gl.enableVertexAttribArray(aTexCoordLocation);
+        gl.vertexAttribPointer(aTexCoordLocation, 2, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(vertexPosition);
         gl.vertexAttribPointer(vertexPosition, 3, gl.FLOAT, false, 0, 0);
-        gl.drawArrays(gl.TRIANGLES, 0, vertices.length);
+        gl.drawArrays(gl.TRIANGLES, isInverted?1:0, vertices.length);
     }
 
-    function drawQuad(a,b,c,d) {
-        let vertices = avwF([a,b,c,c,d,b]);
-        let vertexData = new Float32Array(vertices?.flat());
-        gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
-        gl.bufferData(gl.ARRAY_BUFFER, vertexData, gl.STATIC_DRAW);
-        const vertexPosition = gl.getAttribLocation(program, "aPosition");
-        gl.enableVertexAttribArray(vertexPosition);
-        gl.vertexAttribPointer(vertexPosition, 3, gl.FLOAT, false, 0, 0);
-        gl.drawArrays(gl.TRIANGLES, 0, vertices.length);
+    function drawQuad(a,b,c,d) { // TL TR BR BL
+        // drawTriangle(b,c,d,false);
+        // drawTriangle(d,c,b,true);
+        // drawTriangle(b,a,c,false);
+        let temp = false;
+        // Generated
+        // drawTriangle(a,b,c,temp);
+        drawTriangle(a,b,d,temp);
+        // drawTriangle(a,c,b,temp);
+        // drawTriangle(a,c,d,temp);
+        // drawTriangle(a,d,b,temp);
+        // drawTriangle(a,d,c,temp);
+        // drawTriangle(b,a,c,temp);-
+        // drawTriangle(b,a,d,temp);-
+        // drawTriangle(b,c,a,temp);-
+        drawTriangle(b,c,d,temp);
+        // drawTriangle(b,d,a,temp);
+        // drawTriangle(b,d,c,temp);
+        // drawTriangle(c,a,b,temp);
+        // drawTriangle(c,a,d,temp);
+        // drawTriangle(c,b,a,temp);
+        // drawTriangle(c,b,d,temp);
+        // drawTriangle(c,d,a,temp);
+        // drawTriangle(c,d,b,temp);
+        // drawTriangle(d,a,b,temp);
+        // drawTriangle(d,a,c,temp);
+        // drawTriangle(d,b,a,temp);
+        // drawTriangle(d,b,c,temp);
+        // drawTriangle(d,c,a,temp);
+        // drawTriangle(d,c,b,temp);
     }
 
     function drawCube(x,y,z) {
+        // A B
+        // D C
 
+        // a,c,b,true
+        // b,c,a,false
     }
 
     let p_time = new Date().getTime();
@@ -108,12 +124,16 @@ if (gl === null) {
 
     setInterval(() => {
         document.getElementById("fps").textContent = Math.round(fps_n);
-    },1000);
+    },500);
 
     setInterval(() => {
         fps()
         gl.clearColor(0.0, 0.0, 0.0, 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        drawQuad([0.5,0.5,0.5],[0.5,-0.5,0.5],[-0.5,0.5,-0.5],[-0.5,-0.5,-0.5]);
+        //[0,0,0],[1,0,0],[1,1,0],[0,1,0] BR BL TL TR
+        //TL TR BR BL
+        drawQuad([0,1,0],[1,1,0],[1,0,1],[0,0,1]);
     },0);
+    // gl.getAttribLocation(program, "");
+    // gl.getUniformLocation(program, "");
 }
