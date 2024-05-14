@@ -6,12 +6,16 @@ console.log(fragmentCode);
 const canvas = document.getElementById("screen");
 const gl = canvas.getContext("webgl2");
 let Keyboard = {};
+let deltaTime = 0;
 
 if (gl === null) {
     alert("Unable to initialize WebGL2. Your browser or machine may not support it.");
 } else {
     document.addEventListener("keyup", (event) => {Keyboard[event.key.toUpperCase().replace(" ", "SPACE")] = false});
     document.addEventListener("keydown", (event) => {Keyboard[event.key.toUpperCase().replace(" ", "SPACE")] = true});
+    document.addEventListener("mousemove", function(event) {
+        console.log(event);
+    })
 
     const vertexShader = gl.createShader(gl.VERTEX_SHADER);
     gl.shaderSource(vertexShader, vertexCode.trim());
@@ -44,7 +48,7 @@ if (gl === null) {
         rotateX: 0,
         rotateY: 0,
         rotateZ: 0,
-        FOV: 45,
+        FOV: 110,
         ratio: 1
     }
 
@@ -100,8 +104,10 @@ if (gl === null) {
         // D C
         // TOP_LEFT TOP_RIGHT
         // BOTTOM_RIGHT BOTTOM_LEFT
+        drawQuad([0,1,0],[1,1,0],[1,0,0],[0,0,0]);
+        drawQuad([0,1,0],[0,1,1],[0,0,1],[0,0,0]);
         drawQuad([0,1,1],[1,1,1],[1,0,1],[0,0,1]);
-        drawQuad([1,1,1],[1,1,2],[1,0,1],[1,0,2]);
+        drawQuad([1,1,0],[1,1,1],[1,0,1],[1,0,0]);
     }
 
     let p_time = new Date().getTime();
@@ -116,7 +122,6 @@ if (gl === null) {
 
     setInterval(() => {
         document.getElementById("fps").textContent = Math.round(fps_n);
-        console.log(Keyboard);
     },500);
 
     let speed = 0.001
@@ -133,6 +138,20 @@ if (gl === null) {
         if (Keyboard.D) {
             camera.posX += speed*deltaTime
         }
+        if (Keyboard.SPACE) {
+            camera.posY += speed*deltaTime
+        }
+        if (Keyboard.SHIFT) {
+            camera.posY -= speed*deltaTime
+        }
+        if (Keyboard.R) {
+            camera.posX = 0;
+            camera.posY = 0;
+            camera.posZ = 0;
+        }
+        if (Keyboard.CONTROL) {
+            console.log(Keyboard, camera.posX, camera.posY, camera.posZ);
+        }
     }
 
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -146,7 +165,7 @@ if (gl === null) {
     // gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
     let t = 0;
     setInterval(() => {
-        let deltaTime = fps();
+        deltaTime = fps();
         t += 0.001 * deltaTime;
         controls(deltaTime);
         gl.uniform3fv(aCameraPos, new Float32Array([camera.posX, camera.posY, camera.posZ]));
