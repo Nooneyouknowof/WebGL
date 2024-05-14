@@ -8,17 +8,23 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.8.1/gl-matrix-min.js" defer></script>
     <script type="x-shader/x-vertex" id="vertex">
         attribute vec3 aPosition;
+
         attribute vec2 aTexCoord;
+
+        uniform vec3 aCameraPos;
+        uniform vec3 aCameraRot;
+        uniform float aCameraFOV;
+        uniform float aCameraRatio;
 
         varying vec2 pos;
 
         void main() {
-            pos = aTexCoord;
-
             vec4 position = vec4(aPosition, 1.);
+            float FOV = aCameraFOV;
+            position.xyz -= aCameraPos.xyz;
             position.xy = position.xy * 2. - 1.;
-            //position.x = position.x*0.5;
-            position.xy = position.xy/(position.z+1.0);
+            position.x = position.x/aCameraRatio;
+            position.xy = position.xy*FOV/(position.z + 1.)*FOV;
             pos = (position.xy+1.)/2.;
 
             gl_Position = position;
@@ -28,8 +34,6 @@
         precision mediump float;
 
         varying vec2 pos;
-
-        uniform vec2 screenRatio;
 
         void main() {
             gl_FragColor = vec4(pos.x,pos.y,1.0,1.0);
