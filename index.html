@@ -16,18 +16,18 @@
         uniform float aCameraFOV;
         uniform float aCameraRatio;
 
-        varying vec2 pos;
+        varying vec3 pos;
 
         void main() {
             float size = 10.;
             vec4 position = vec4(aPosition, size);
             float FOV = aCameraFOV;
             position.xyz -= aCameraPos.xyz;
-            //position.xy *= size;
             position.xy = position.xy * 2. - 1.;
+            //position.xy *= size;
             position.x = position.x/aCameraRatio;
             position.xy = position.xy*FOV/position.z*FOV;
-            pos = (position.xy+1.)/2.;
+            pos = vec4(aPosition, 0.0).xyz;
 
             gl_Position = position;
         }
@@ -35,10 +35,10 @@
     <script type="x-shader/x-fragment" id="fragment">
         precision mediump float;
 
-        varying vec2 pos;
+        varying vec3 pos;
 
         void main() {
-            gl_FragColor = vec4(pos.x,pos.y,1.0,1.0);
+            gl_FragColor = vec4(pos.x,pos.y,1.-pos.z,1.0);
         }
     </script>
     <script type="module" src="main.js" defer></script>

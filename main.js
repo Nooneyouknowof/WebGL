@@ -19,16 +19,30 @@ if (gl === null) {
     document.addEventListener("keydown", (event) => {
         if (!event.repeat) {Keyboard[event.key.toUpperCase().replace(" ", "SPACE")] = true}
     });
+
+    function modulo(n,d) {
+        return ((n % d) + d) % d
+    }
+    function toDeg(arg) {
+        arg = arg % 360;
+        return arg;
+    }
+
     let p_event = {};
-    let sens = 1;
+    let sens = 100;
+    let rotateX = 0;
+    let rotateY = 0;
+    let rotateZ = 0;
     document.addEventListener("mousemove", function(event) {
-        let mousemoveX = (event.x-p_event.x)*sens/degToRad(camera.FOV);
-        let mousemoveY = (event.y-p_event.y)*sens/degToRad(camera.FOV);
+        let mousemoveX = ((event.x-p_event.x)*sens/width)/degToRad(camera.FOV);
+        let mousemoveY = ((event.y-p_event.y)*sens/height)/degToRad(camera.FOV);
         mousemoveX = mousemoveX?mousemoveX:0;
         mousemoveY = mousemoveY?mousemoveY:0;
         p_event = event;
-        camera.rotateX += mousemoveX;
-        console.log(camera.rotateX,camera.rotateY,camera.rotateZ);
+        rotateX += mousemoveX;
+        console.log(rotateX, toDeg(rotateX))
+        // camera.rotX = deg(rotateX);
+        // console.log(camera.rotateX,camera.rotateY,camera.rotateZ);
     })
 
     const vertexShader = gl.createShader(gl.VERTEX_SHADER);
@@ -54,14 +68,14 @@ if (gl === null) {
     }
     gl.useProgram(program);
 
-    let camera = {
-        posX: 0,
-        posY: 0,
-        posZ: -1,
+    let camera = { // 2.5,1,-3
+        posX: 2.5,
+        posY: 1,
+        posZ: -3,
         rotateX: 0,
         rotateY: 0,
         rotateZ: 0,
-        FOV: 110,
+        FOV: 90,
         ratio: 1
     }
 
@@ -81,7 +95,7 @@ if (gl === null) {
         canvas.height = height;
         camera.ratio = width/height;
         gl.viewport(0, 0, canvas.width, canvas.height);
-        gl.uniform1f(aCameraFOV, degToRad(camera.FOV));
+        gl.uniform1f(aCameraFOV, degToRad(camera.FOV+90));
         gl.uniform1f(aCameraRatio, camera.ratio);
     }
     window.addEventListener("resize", event => {if (!event.repeat) {resizeCanvas()}});
@@ -104,25 +118,21 @@ if (gl === null) {
 
         gl.enableVertexAttribArray(vertexPosition);
         gl.vertexAttribPointer(vertexPosition, 3, gl.FLOAT, false, 0, 0);
-        gl.drawArrays(gl.TRIANGLES, isInverted?1:0, vertices.length);
+        gl.drawArrays(gl.TRIANGLES, isInverted?0:1, vertices.length);
     }
 
-    function drawQuad(a,b,c,d) { // TL TR BR BL
-        drawTriangle(a,b,d,false);
-        drawTriangle(b,c,d,false);
+    function drawQuad(a,b,c,d) {
+        drawTriangle(b,d,c,true);
+        drawTriangle(d,b,a,true);
     }
 
     function drawCube(x,y,z) {
-        // A B
-        // D C
-        // TOP_LEFT TOP_RIGHT
-        // BOTTOM_RIGHT BOTTOM_LEFT
-        drawQuad([0,1,0],[1,1,0],[1,1,1],[0,1,1]);
-        drawQuad([0,1,0],[1,1,0],[1,0,0],[0,0,0]);
-        drawQuad([0,1,0],[0,1,1],[0,0,1],[0,0,0]);
-        drawQuad([0,1,1],[1,1,1],[1,0,1],[0,0,1]);
-        drawQuad([1,1,0],[1,1,1],[1,0,1],[1,0,0]);
-        drawQuad([0,0,0],[1,0,0],[1,0,1],[0,0,1]);
+        drawQuad([0,0,1],[1,0,1],[1,1,1],[0,1,1]);// Back
+        drawQuad([0,0,0],[1,0,0],[1,0,1],[0,0,1]);// Bottom
+        drawQuad([0,1,1],[1,1,1],[1,1,0],[0,1,0]);// Top
+        drawQuad([0,1,1],[0,1,0],[0,0,0],[0,0,1]);// Left
+        drawQuad([1,1,0],[1,1,1],[1,0,1],[1,0,0]);// Right
+        drawQuad([0,1,0],[1,1,0],[1,0,0],[0,0,0]);// Front
     }
 
     let p_time = new Date().getTime();
@@ -139,7 +149,7 @@ if (gl === null) {
         document.getElementById("fps").textContent = Math.round(fps_n);
     },500);
 
-    let speed = 0.001
+    let speed = 0.0025
     function controls(deltaTime) {
         if (Keyboard.W) {
             camera.posZ += speed*deltaTime
@@ -173,12 +183,8 @@ if (gl === null) {
     }
 
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
-    // const targetTextureWidth = 256;
-    // const targetTextureHeight = 256;
-    // const targetTexture = gl.createTexture();
-    // gl.bindTexture(gl.TEXTURE_2D, targetTexture);
-    // gl.enable(gl.CULL_FACE);
-    // gl.enable(gl.DEPTH_TEST);
+    gl.enable(gl.CULL_FACE);
+    gl.enable(gl.DEPTH_TEST);
     // const fb = gl.createFramebuffer();
     // gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
     let t = 0;
