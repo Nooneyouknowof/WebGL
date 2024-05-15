@@ -7,14 +7,28 @@ const canvas = document.getElementById("screen");
 const gl = canvas.getContext("webgl2");
 let Keyboard = {};
 let deltaTime = 0;
+let width = 0;
+let height = 0;
 
 if (gl === null) {
     alert("Unable to initialize WebGL2. Your browser or machine may not support it.");
 } else {
-    document.addEventListener("keyup", (event) => {Keyboard[event.key.toUpperCase().replace(" ", "SPACE")] = false});
-    document.addEventListener("keydown", (event) => {Keyboard[event.key.toUpperCase().replace(" ", "SPACE")] = true});
+    document.addEventListener("keyup", (event) => {
+        if (!event.repeat) {Keyboard[event.key.toUpperCase().replace(" ", "SPACE")] = false}
+    });
+    document.addEventListener("keydown", (event) => {
+        if (!event.repeat) {Keyboard[event.key.toUpperCase().replace(" ", "SPACE")] = true}
+    });
+    let p_event = {};
+    let sens = 1;
     document.addEventListener("mousemove", function(event) {
-        console.log(event);
+        let mousemoveX = (event.x-p_event.x)*sens/degToRad(camera.FOV);
+        let mousemoveY = (event.y-p_event.y)*sens/degToRad(camera.FOV);
+        mousemoveX = mousemoveX?mousemoveX:0;
+        mousemoveY = mousemoveY?mousemoveY:0;
+        p_event = event;
+        camera.rotateX += mousemoveX;
+        console.log(camera.rotateX,camera.rotateY,camera.rotateZ);
     })
 
     const vertexShader = gl.createShader(gl.VERTEX_SHADER);
@@ -40,11 +54,10 @@ if (gl === null) {
     }
     gl.useProgram(program);
 
-
     let camera = {
         posX: 0,
         posY: 0,
-        posZ: 0,
+        posZ: -1,
         rotateX: 0,
         rotateY: 0,
         rotateZ: 0,
@@ -62,8 +75,8 @@ if (gl === null) {
     const aCameraRatio = gl.getUniformLocation(program, "aCameraRatio");
 
     function resizeCanvas() {
-        let width = window.innerWidth;
-        let height = window.innerHeight;
+        width = window.innerWidth;
+        height = window.innerHeight;
         canvas.width = width;
         canvas.height = height;
         camera.ratio = width/height;
@@ -71,7 +84,7 @@ if (gl === null) {
         gl.uniform1f(aCameraFOV, degToRad(camera.FOV));
         gl.uniform1f(aCameraRatio, camera.ratio);
     }
-    window.addEventListener("resize", resizeCanvas);
+    window.addEventListener("resize", event => {if (!event.repeat) {resizeCanvas()}});
     resizeCanvas();
 
     function drawTriangle(a,b,c,isInverted) {
@@ -81,7 +94,7 @@ if (gl === null) {
         gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, vertexData, gl.STATIC_DRAW);
         const vertexPosition = gl.getAttribLocation(program, "aPosition");
-        const aTexCoordLocation = gl.getAttribLocation(program, "aTexCoord");
+        // const aTexCoordLocation = gl.getAttribLocation(program, "aTexCoord");
         // var texcoordBuffer = gl.createBuffer();
         // gl.bindBuffer(gl.ARRAY_BUFFER, texcoordBuffer);
         // gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0]), gl.STATIC_DRAW);
@@ -99,15 +112,17 @@ if (gl === null) {
         drawTriangle(b,c,d,false);
     }
 
-    function drawCube() {
+    function drawCube(x,y,z) {
         // A B
         // D C
         // TOP_LEFT TOP_RIGHT
         // BOTTOM_RIGHT BOTTOM_LEFT
+        drawQuad([0,1,0],[1,1,0],[1,1,1],[0,1,1]);
         drawQuad([0,1,0],[1,1,0],[1,0,0],[0,0,0]);
         drawQuad([0,1,0],[0,1,1],[0,0,1],[0,0,0]);
         drawQuad([0,1,1],[1,1,1],[1,0,1],[0,0,1]);
         drawQuad([1,1,0],[1,1,1],[1,0,1],[1,0,0]);
+        drawQuad([0,0,0],[1,0,0],[1,0,1],[0,0,1]);
     }
 
     let p_time = new Date().getTime();
@@ -147,7 +162,10 @@ if (gl === null) {
         if (Keyboard.R) {
             camera.posX = 0;
             camera.posY = 0;
-            camera.posZ = 0;
+            camera.posZ = -1;
+            camera.rotX = 0;
+            camera.rotY = 0;
+            camera.rotZ = 0;
         }
         if (Keyboard.CONTROL) {
             console.log(Keyboard, camera.posX, camera.posY, camera.posZ);
