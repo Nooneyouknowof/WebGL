@@ -23,8 +23,8 @@ if (gl === null) {
     function modulo(n,d) {
         return ((n % d) + d) % d
     }
-    function toDeg(arg) {
-        arg = arg % 360;
+    function deg(arg) {
+        arg = modulo(arg,360);
         return arg;
     }
 
@@ -40,7 +40,7 @@ if (gl === null) {
         mousemoveY = mousemoveY?mousemoveY:0;
         p_event = event;
         rotateX += mousemoveX;
-        console.log(rotateX, toDeg(rotateX))
+        // console.log(rotateX, deg(rotateX))
         // camera.rotX = deg(rotateX);
         // console.log(camera.rotateX,camera.rotateY,camera.rotateZ);
     })
@@ -101,20 +101,15 @@ if (gl === null) {
     window.addEventListener("resize", event => {if (!event.repeat) {resizeCanvas()}});
     resizeCanvas();
 
-    function drawTriangle(a,b,c,isInverted) {
-        let vertices = [a,b,c];
+    function drawTriangle(vertices,isInverted) {
         let vertexData = new Float32Array(vertices?.flat());
         let positionBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, vertexData, gl.STATIC_DRAW);
         const vertexPosition = gl.getAttribLocation(program, "aPosition");
-        // const aTexCoordLocation = gl.getAttribLocation(program, "aTexCoord");
-        // var texcoordBuffer = gl.createBuffer();
-        // gl.bindBuffer(gl.ARRAY_BUFFER, texcoordBuffer);
-        // gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0]), gl.STATIC_DRAW);
 
-        var texture = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D, texture);
+        // var texture = gl.createTexture();
+        // gl.bindTexture(gl.TEXTURE_2D, texture);
 
         gl.enableVertexAttribArray(vertexPosition);
         gl.vertexAttribPointer(vertexPosition, 3, gl.FLOAT, false, 0, 0);
@@ -122,17 +117,18 @@ if (gl === null) {
     }
 
     function drawQuad(a,b,c,d) {
-        drawTriangle(b,d,c,true);
-        drawTriangle(d,b,a,true);
+        // drawTriangle([b,d,c],true);
+        // drawTriangle([d,b,a],true);
+        drawTriangle([b,d,c,d,b,a],true);
     }
 
     function drawCube(x,y,z) {
-        drawQuad([0,0,1],[1,0,1],[1,1,1],[0,1,1]);// Back
-        drawQuad([0,0,0],[1,0,0],[1,0,1],[0,0,1]);// Bottom
-        drawQuad([0,1,1],[1,1,1],[1,1,0],[0,1,0]);// Top
-        drawQuad([0,1,1],[0,1,0],[0,0,0],[0,0,1]);// Left
-        drawQuad([1,1,0],[1,1,1],[1,0,1],[1,0,0]);// Right
-        drawQuad([0,1,0],[1,1,0],[1,0,0],[0,0,0]);// Front
+        drawQuad([x+0,y+0,z+1],[x+1,y+0,z+1],[x+1,y+1,z+1],[x+0,y+1,z+1]);// Back
+        drawQuad([x+0,y+0,z+0],[x+1,y+0,z+0],[x+1,y+0,z+1],[x+0,y+0,z+1]);// Bottom
+        drawQuad([x+0,y+1,z+1],[x+1,y+1,z+1],[x+1,y+1,z+0],[x+0,y+1,z+0]);// Top
+        drawQuad([x+0,y+1,z+1],[x+0,y+1,z+0],[x+0,y+0,z+0],[x+0,y+0,z+1]);// Left
+        drawQuad([x+1,y+1,z+0],[x+1,y+1,z+1],[x+1,y+0,z+1],[x+1,y+0,z+0]);// Right
+        drawQuad([x+0,y+1,z+0],[x+1,y+1,z+0],[x+1,y+0,z+0],[x+0,y+0,z+0]);// Front
     }
 
     let p_time = new Date().getTime();
@@ -146,10 +142,15 @@ if (gl === null) {
     }
 
     setInterval(() => {
-        document.getElementById("fps").textContent = Math.round(fps_n);
+        document.getElementById("fps").textContent = `${Math.round(fps_n)}, ${deltaTime}ms`;
     },500);
 
-    let speed = 0.0025
+    let speed = 2.5;
+    let gravity = 0.25;
+    let isGrounded = false;
+    let px = camera.posX;
+    let py = camera.posY;
+    let pz = camera.posZ;
     function controls(deltaTime) {
         if (Keyboard.W) {
             camera.posZ += speed*deltaTime
@@ -163,11 +164,23 @@ if (gl === null) {
         if (Keyboard.D) {
             camera.posX += speed*deltaTime
         }
-        if (Keyboard.SPACE) {
-            camera.posY += speed*deltaTime
+        if (Keyboard.SPACE && isGrounded) {
+            isGrounded = false;
+            camera.posY += 1;
         }
         if (Keyboard.SHIFT) {
             camera.posY -= speed*deltaTime
+        }
+        if (!isGrounded) {
+            let y = camera.posY;
+            camera.posY = y-(((py-y)*0.6)*(deltaTime*3));
+            py = py-(((py-y-gravity)*1)*(deltaTime*3));
+            // console.log(py, y);
+        } 
+        if (camera.posY <= 0) {
+            camera.posY = 0;
+            py = 0;
+            isGrounded = true;
         }
         if (Keyboard.R) {
             camera.posX = 0;
@@ -187,14 +200,14 @@ if (gl === null) {
     gl.enable(gl.DEPTH_TEST);
     // const fb = gl.createFramebuffer();
     // gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
-    let t = 0;
+    // let cubes = [Math.random()*100,Math.random()*100,Math.random()*100];
     setInterval(() => {
-        deltaTime = fps();
-        t += 0.001 * deltaTime;
+        deltaTime = fps()/1000;
         controls(deltaTime);
         gl.uniform3fv(aCameraPos, new Float32Array([camera.posX, camera.posY, camera.posZ]));
         gl.uniform3fv(aCameraRot, new Float32Array([camera.rotateX, camera.rotateY, camera.rotateZ]));
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        drawCube();
+        drawCube(0,0,0);
+        drawCube(0,1,1);
     },0);
 }
