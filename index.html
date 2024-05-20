@@ -29,6 +29,7 @@
             position.x = position.x/aCameraRatio;
             position.xy = position.xy*FOV/position.z*FOV;
             pos = vec4(aPosition, 0.).xyz;
+            //position.y -= size; // Camera Offset
 
             gl_Position = position;
         }

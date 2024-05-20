@@ -146,7 +146,7 @@ if (gl === null) {
     },500);
 
     let speed = 2.5;
-    let gravity = 0.25;
+    let gravity = 0.5;
     let isGrounded = false;
     let px = camera.posX;
     let py = camera.posY;
@@ -166,16 +166,15 @@ if (gl === null) {
         }
         if (Keyboard.SPACE && isGrounded) {
             isGrounded = false;
-            camera.posY += 1;
+            py -= 1;
         }
         if (Keyboard.SHIFT) {
             camera.posY -= speed*deltaTime
         }
         if (!isGrounded) {
             let y = camera.posY;
-            camera.posY = y-(((py-y)*0.6)*(deltaTime*3));
-            py = py-(((py-y-gravity)*1)*(deltaTime*3));
-            // console.log(py, y);
+            camera.posY = y-(((py-y)*0.98)*(deltaTime*5));
+            py = py-(((py-y-gravity)*1)*(deltaTime*5));
         } 
         if (camera.posY <= 0) {
             camera.posY = 0;
