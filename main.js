@@ -205,6 +205,9 @@ if (gl === null) {
         controls(deltaTime);
         gl.uniform3fv(aCameraPos, new Float32Array([camera.posX, camera.posY, camera.posZ]));
         gl.uniform3fv(aCameraRot, new Float32Array([camera.rotateX, camera.rotateY, camera.rotateZ]));
+        let RotationMatrix = mat4.create();
+        mat4.set(RotationMatrix,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.);
+        console.log(RotationMatrix);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         drawCube(0,0,0);
         drawCube(0,1,1);
