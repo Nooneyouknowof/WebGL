@@ -40,8 +40,10 @@ if (gl === null) {
         mousemoveY = mousemoveY?mousemoveY:0;
         p_event = event;
         rotateX += mousemoveX;
-        // console.log(rotateX, deg(rotateX))
-        // camera.rotX = deg(rotateX);
+        rotateY += mousemoveY;
+        camera.rotateX = -deg(rotateX);
+        camera.rotateY = -deg(rotateY);
+        console.log(rotateX, deg(rotateX));
         // console.log(camera.rotateX,camera.rotateY,camera.rotateZ);
     })
 
@@ -68,14 +70,14 @@ if (gl === null) {
     }
     gl.useProgram(program);
 
-    let camera = { // 2.5,1,-3
+    let camera = {
         posX: 0,
         posY: 0,
         posZ: 1,
         rotateX: 0,
         rotateY: 0,
         rotateZ: 0,
-        FOV: 90,
+        FOV: 45,
         ratio: 1
     }
 
@@ -140,7 +142,8 @@ if (gl === null) {
         document.getElementById("fps").innerHTML = `${Math.round(fps_n)}, ${deltaTime}ms<br>Coords: ${Math.round(camera.posX)}, ${Math.round(camera.posY)}, ${Math.round(camera.posZ)}`;
     },500);
 
-    let speed = 10;
+    let walkspeed = 10;
+    let sprintspeed = 20;
     let jump = 1.15;
     let gravity = 0.5;
     let isGrounded = false;
@@ -148,6 +151,7 @@ if (gl === null) {
     let py = camera.posY;
     let pz = camera.posZ;
     function controls(deltaTime) {
+        let speed = Keyboard.CONTROL?sprintspeed:walkspeed;
         if (Keyboard.W) {
             pz += speed*deltaTime;
         }
@@ -190,16 +194,12 @@ if (gl === null) {
             px = camera.posX;
             camera.posY = 0;
             py = camera.posY;
-            camera.posZ = 0;
+            camera.posZ = 1;
             pz = camera.posZ;
             camera.rotX = 0;
             camera.rotY = 0;
             camera.rotZ = 0;
         }
-        if (Keyboard.CONTROL) {
-            // console.log(Keyboard, camera.posX, camera.posY, camera.posZ);
-        }
-
     }
 
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -216,11 +216,11 @@ if (gl === null) {
         // camera.rotateX = -45;
         // camera.rotateY = 45;
         // camera.rotateZ = 45;
-        mat4.rotateX(modelViewMatrix, modelViewMatrix, degToRad(-camera.rotateX));
-        mat4.rotateY(modelViewMatrix, modelViewMatrix, degToRad(-camera.rotateY));
+        mat4.rotateX(modelViewMatrix, modelViewMatrix, degToRad(-camera.rotateY));
+        mat4.rotateY(modelViewMatrix, modelViewMatrix, degToRad(-camera.rotateX));
         mat4.rotateZ(modelViewMatrix, modelViewMatrix, degToRad(-camera.rotateZ));
         mat4.translate(modelViewMatrix, modelViewMatrix, [-camera.posX,-camera.posY,-camera.posZ]);
-        mat4.perspective(projectionMatrix, degToRad(45), camera.ratio, 0.1, Infinity);
+        mat4.perspective(projectionMatrix, degToRad(camera.FOV), camera.ratio, 0.1, Infinity);     
 
         gl.uniformMatrix4fv(uModelViewMatrix, false, modelViewMatrix);
         gl.uniformMatrix4fv(uProjectionViewMatrix, false, projectionMatrix);
@@ -234,5 +234,5 @@ if (gl === null) {
 
     setInterval(() => {
         Render();
-    },10);
+    },0);
 }
