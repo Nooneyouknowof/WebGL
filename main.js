@@ -118,12 +118,12 @@ if (gl === null) {
     }
 
     function drawCube(x,y,z) {
-        drawQuad([x+0,y+0,z+1],[x+1,y+0,z+1],[x+1,y+1,z+1],[x+0,y+1,z+1]);// Back
-        drawQuad([x+0,y+0,z+0],[x+1,y+0,z+0],[x+1,y+0,z+1],[x+0,y+0,z+1]);// Bottom
-        drawQuad([x+0,y+1,z+1],[x+1,y+1,z+1],[x+1,y+1,z+0],[x+0,y+1,z+0]);// Top
-        drawQuad([x+0,y+1,z+1],[x+0,y+1,z+0],[x+0,y+0,z+0],[x+0,y+0,z+1]);// Left
-        drawQuad([x+1,y+1,z+0],[x+1,y+1,z+1],[x+1,y+0,z+1],[x+1,y+0,z+0]);// Right
-        drawQuad([x+0,y+1,z+0],[x+1,y+1,z+0],[x+1,y+0,z+0],[x+0,y+0,z+0]);// Front
+        drawQuad([x-0.5,y-0.5,z+0.5],[x+0.5,y-0.5,z+0.5],[x+0.5,y+0.5,z+0.5],[x-0.5,y+0.5,z+0.5]);// Back
+        drawQuad([x-0.5,y-0.5,z-0.5],[x+0.5,y-0.5,z-0.5],[x+0.5,y-0.5,z+0.5],[x-0.5,y-0.5,z+0.5]);// Bottom
+        drawQuad([x-0.5,y+0.5,z+0.5],[x+0.5,y+0.5,z+0.5],[x+0.5,y+0.5,z-0.5],[x-0.5,y+0.5,z-0.5]);// Top
+        drawQuad([x-0.5,y+0.5,z+0.5],[x-0.5,y+0.5,z-0.5],[x-0.5,y-0.5,z-0.5],[x-0.5,y-0.5,z+0.5]);// Left
+        drawQuad([x+0.5,y+0.5,z-0.5],[x+0.5,y+0.5,z+0.5],[x+0.5,y-0.5,z+0.5],[x+0.5,y-0.5,z-0.5]);// Right
+        drawQuad([x-0.5,y+0.5,z-0.5],[x+0.5,y+0.5,z-0.5],[x+0.5,y-0.5,z-0.5],[x-0.5,y-0.5,z-0.5]);// Front
     }
 
     let p_time = new Date().getTime();
@@ -137,10 +137,10 @@ if (gl === null) {
     }
 
     setInterval(() => {
-        document.getElementById("fps").innerHTML = `${Math.round(fps_n)}, ${deltaTime}ms<br>Coords: ${camera.posX}, ${camera.posY}, ${camera.posZ}`;
+        document.getElementById("fps").innerHTML = `${Math.round(fps_n)}, ${deltaTime}ms<br>Coords: ${Math.round(camera.posX)}, ${Math.round(camera.posY)}, ${Math.round(camera.posZ)}`;
     },500);
 
-    let speed = 2.5;
+    let speed = 1.5;
     let gravity = 0.5;
     let isGrounded = false;
     let px = camera.posX;
@@ -148,16 +148,16 @@ if (gl === null) {
     let pz = camera.posZ;
     function controls(deltaTime) {
         if (Keyboard.W) {
-            camera.posZ += speed*deltaTime
+            pz += speed*deltaTime
         }
         if (Keyboard.A) {
-            camera.posX -= speed*deltaTime
+            px += speed*deltaTime
         }
         if (Keyboard.S) {
-            camera.posZ -= speed*deltaTime
+            pz -= speed*deltaTime
         }
         if (Keyboard.D) {
-            camera.posX += speed*deltaTime
+            px -= speed*deltaTime
         }
         if (Keyboard.SPACE && isGrounded) {
             isGrounded = false;
@@ -168,9 +168,17 @@ if (gl === null) {
         }
         if (!isGrounded) {
             let y = camera.posY;
-            camera.posY = y-(((py-y)*0.98)*(deltaTime*5));
+            camera.posY = y-(((py-y)*0.998)*(deltaTime*5));
             py = py-(((py-y-gravity)*1)*(deltaTime*5));
-        } 
+        }
+        
+        let x = camera.posX;
+        camera.posX = x-(((px-x)*0.998)*(deltaTime*5));
+        px = px-(((px-x)*1)*(deltaTime*5));
+        let z = camera.posZ;
+        camera.posZ = z-(((pz-z)*0.998)*(deltaTime*5));
+        pz = pz-(((pz-z)*1)*(deltaTime*5));
+
         if (camera.posY <= 0) {
             camera.posY = 0;
             py = 0;
@@ -178,14 +186,17 @@ if (gl === null) {
         }
         if (Keyboard.R) {
             camera.posX = 0;
+            px = camera.posX;
             camera.posY = 0;
-            camera.posZ = 1;
+            py = camera.posY;
+            camera.posZ = 0;
+            pz = camera.posZ;
             camera.rotX = 0;
             camera.rotY = 0;
             camera.rotZ = 0;
         }
         if (Keyboard.CONTROL) {
-            console.log(Keyboard, camera.posX, camera.posY, camera.posZ);
+            // console.log(Keyboard, camera.posX, camera.posY, camera.posZ);
         }
 
     }
@@ -195,7 +206,8 @@ if (gl === null) {
     gl.enable(gl.DEPTH_TEST);
     const uModelViewMatrix = gl.getUniformLocation(program, "uModelViewMatrix");
     const uProjectionViewMatrix = gl.getUniformLocation(program, "uProjectionViewMatrix");
-    setInterval(() => {
+
+    function Render() {
         deltaTime = fps()/1000;
         controls(deltaTime);
         const modelViewMatrix = mat4.create();
@@ -205,19 +217,21 @@ if (gl === null) {
         // camera.rotateZ = 45;
         mat4.rotateX(modelViewMatrix, modelViewMatrix, degToRad(-camera.rotateX));
         mat4.rotateY(modelViewMatrix, modelViewMatrix, degToRad(-camera.rotateY));
-        mat4.rotateZ(modelViewMatrix, modelViewMatrix, degToRad(camera.rotateZ));
+        mat4.rotateZ(modelViewMatrix, modelViewMatrix, degToRad(-camera.rotateZ));
         mat4.translate(modelViewMatrix, modelViewMatrix, [-camera.posX,-camera.posY,-camera.posZ]);
-        mat4.perspective(projectionMatrix, degToRad(90), camera.ratio, 0.1, 100.0);
+        mat4.perspective(projectionMatrix, degToRad(45), camera.ratio, 0.1, Infinity);
 
         gl.uniformMatrix4fv(uModelViewMatrix, false, modelViewMatrix);
         gl.uniformMatrix4fv(uProjectionViewMatrix, false, projectionMatrix);
 
-        // console.log(modelViewMatrix);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         drawCube(0,0,0);
-        drawCube(0,0,1);
-        // drawCube(0,1,1);
-        // drawCube(1,1,1);
-        // drawCube(0,2,1);
-    },0);
+        drawCube(0,1,1);
+        requestAnimationFrame(Render);
+    }
+    Render();
+
+    // setInterval(() => {
+    //     Render();
+    // },10);
 }
