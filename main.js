@@ -83,10 +83,8 @@ if (gl === null) {
         return d * Math.PI / 180;
     }
 
-    const aCameraPos = gl.getUniformLocation(program, "aCameraPos")
-    const aCameraRot = gl.getUniformLocation(program, "aCameraRot");
-    const aCameraFOV = gl.getUniformLocation(program, "aCameraFOV");
-    const aCameraRatio = gl.getUniformLocation(program, "aCameraRatio");
+    const aCameraFOV = gl.getUniformLocation(program, "uCameraFOV");
+    const aCameraRatio = gl.getUniformLocation(program, "uCameraRatio");
 
     function resizeCanvas() {
         width = window.innerWidth;
@@ -95,7 +93,7 @@ if (gl === null) {
         canvas.height = height;
         camera.ratio = width/height;
         gl.viewport(0, 0, canvas.width, canvas.height);
-        gl.uniform1f(aCameraFOV, degToRad(camera.FOV+90));
+        gl.uniform1f(aCameraFOV, degToRad(camera.FOV));
         gl.uniform1f(aCameraRatio, camera.ratio);
     }
     window.addEventListener("resize", event => {if (!event.repeat) {resizeCanvas()}});
@@ -107,9 +105,6 @@ if (gl === null) {
         gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, vertexData, gl.STATIC_DRAW);
         const vertexPosition = gl.getAttribLocation(program, "aPosition");
-
-        // var texture = gl.createTexture();
-        // gl.bindTexture(gl.TEXTURE_2D, texture);
 
         gl.enableVertexAttribArray(vertexPosition);
         gl.vertexAttribPointer(vertexPosition, 3, gl.FLOAT, false, 0, 0);
@@ -192,26 +187,31 @@ if (gl === null) {
         if (Keyboard.CONTROL) {
             console.log(Keyboard, camera.posX, camera.posY, camera.posZ);
         }
+
     }
 
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.enable(gl.CULL_FACE);
     gl.enable(gl.DEPTH_TEST);
-    // const fb = gl.createFramebuffer();
-    // gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
-    // let cubes = [Math.random()*100,Math.random()*100,Math.random()*100];
+    const uModelViewMatrix = gl.getUniformLocation(program, "uModelViewMatrix");
+    const uProjectionViewMatrix = gl.getUniformLocation(program, "uProjectionViewMatrix");
     setInterval(() => {
         deltaTime = fps()/1000;
         controls(deltaTime);
-        gl.uniform3fv(aCameraPos, new Float32Array([camera.posX, camera.posY, camera.posZ]));
-        gl.uniform3fv(aCameraRot, new Float32Array([camera.rotateX, camera.rotateY, camera.rotateZ]));
-        let RotationMatrix = mat4.create();
-        mat4.set(RotationMatrix,1,0,0,0,0,Math.cos(camera.rotateX),-Math.sin(camera.rotateX),0,Math.sin(camera.rotateX), Math.cos(camera.rotateX),0,0,0,0,1);
-        let TransformationMatrix = mat4.create();
-        mat4.set(TransformationMatrix,1,0,0,camera.posX,0,1,0,camera.posY,0,0,1,camera.posZ,0,0,0,1)
-        console.log(RotationMatrix);
+        const modelViewMatrix = mat4.create();
+        const projectionMatrix = mat4.create();
+
+        mat4.rotateX(modelViewMatrix, modelViewMatrix, degToRad(camera.rotateX));
+        mat4.rotateY(modelViewMatrix, modelViewMatrix, degToRad(camera.rotateY));
+        mat4.translate(modelViewMatrix, modelViewMatrix, [-camera.posX,-camera.posY,-camera.posZ]);
+        mat4.perspective(projectionMatrix, degToRad(45), camera.ratio, 0.1, 1.0);
+
+        gl.uniformMatrix4fv(uModelViewMatrix, false, modelViewMatrix);
+        gl.uniformMatrix4fv(uProjectionViewMatrix, false, projectionMatrix);
+
+        // console.log(modelViewMatrix);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         drawCube(0,0,0);
         drawCube(0,1,1);
-    },0);
+    },10);
 }

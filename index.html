@@ -11,26 +11,26 @@
 
         attribute vec2 aTexCoord;
 
-        uniform vec3 aCameraPos;
-        uniform vec3 aCameraRot;
-        uniform float aCameraFOV;
-        uniform float aCameraRatio;
+        uniform float uCameraFOV;
+        uniform float uCameraRatio;
+        uniform mat4 uModelViewMatrix;
+        uniform mat4 uProjectionViewMatrix;
 
         varying vec3 pos;
 
         void main() {
             float size = 10.;
             vec4 position = vec4(aPosition, size);
-            float FOV = aCameraFOV;
-            //position.xyz -= aCameraPos;
+            float FOV = uCameraFOV;
             position.xy = position.xy * 2. - 1.;
             //position.xy *= size;
             //position.z /= (size/2.);
-            position.x = position.x/aCameraRatio;
+            //position.x = position.x/uCameraRatio;
             position.xy = position.xy*FOV/position.z*FOV;
-            pos = vec4(aPosition, 0.).xyz;
-            //position.y -= size; // Camera Offset
-
+            pos = (uProjectionViewMatrix * uModelViewMatrix * vec4(aPosition,1.0)).xyz;
+            
+            //pos = (uModelViewMatrix * vec4(position.xyz, 1.0)).xyz;
+            //gl_Position = uProjectionViewMatrix * vec4(pos, 1.0);
             gl_Position = position;
         }
     </script>
@@ -41,6 +41,7 @@
 
         void main() {
             gl_FragColor = vec4(pos.x,pos.y,1.-pos.z,1.0);
+            //gl_FragColor = vec4(1.0,1.0,1.0,1.0);
         }
     </script>
     <script type="text/javascript" src="main.js" defer></script>
