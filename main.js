@@ -1,3 +1,5 @@
+import {mat4} from './node_modules/gl-matrix/esm/index.js'
+
 const vertexCode = document.getElementById("vertex").textContent;
 const fragmentCode = document.getElementById("fragment").textContent;
 console.log(vertexCode);
@@ -6,6 +8,9 @@ console.log(fragmentCode);
 const canvas = document.getElementById("screen");
 const gl = canvas.getContext("webgl2");
 let Keyboard = {};
+let Settings = {
+    "locked": false,
+};
 let deltaTime = 0;
 let width = 0;
 let height = 0;
@@ -19,6 +24,10 @@ if (gl === null) {
     document.addEventListener("keydown", (event) => {
         if (!event.repeat) {Keyboard[event.key.toUpperCase().replace(" ", "SPACE")] = true}
     });
+    canvas.addEventListener("click", async () => {
+        await canvas.requestPointerLock({unadjustedMovement: true});
+    });
+    document.addEventListener("pointerlockchange", () => {Settings.locked = !Settings.locked});
 
     function modulo(n,d) {
         return ((n % d) + d) % d
@@ -43,7 +52,7 @@ if (gl === null) {
         rotateY += mousemoveY;
         camera.rotateX = -deg(rotateX);
         camera.rotateY = -deg(rotateY);
-        console.log(rotateX, deg(rotateX));
+        // console.log(rotateX, deg(rotateX));
         // console.log(camera.rotateX,camera.rotateY,camera.rotateZ);
     })
 
