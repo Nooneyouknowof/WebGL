@@ -22,7 +22,7 @@
             vec4 position = vec4(aPosition, 1.0);
             position.z = -position.z;
             pos = position.xyz+0.5;
-            
+            position.z = position.z-0.5;
             gl_Position = uProjectionViewMatrix * uModelViewMatrix * position;
         }
     </script>

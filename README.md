@@ -7,9 +7,9 @@
 - Fragment Shader
 - Matrix Manipultation
 - Trigonometry (3D to 2D transformations)
+- Inertia Based Player Controls (Verlet Integration)
 
 ## Up and comming:
-- Refined Player Controls
 - Entity models
 - Textures
 - Shading

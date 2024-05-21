@@ -140,7 +140,8 @@ if (gl === null) {
         document.getElementById("fps").innerHTML = `${Math.round(fps_n)}, ${deltaTime}ms<br>Coords: ${Math.round(camera.posX)}, ${Math.round(camera.posY)}, ${Math.round(camera.posZ)}`;
     },500);
 
-    let speed = 1.5;
+    let speed = 10;
+    let jump = 1.15;
     let gravity = 0.5;
     let isGrounded = false;
     let px = camera.posX;
@@ -148,20 +149,20 @@ if (gl === null) {
     let pz = camera.posZ;
     function controls(deltaTime) {
         if (Keyboard.W) {
-            pz += speed*deltaTime
+            pz += speed*deltaTime;
         }
         if (Keyboard.A) {
-            px += speed*deltaTime
+            px += speed*deltaTime;
         }
         if (Keyboard.S) {
-            pz -= speed*deltaTime
+            pz -= speed*deltaTime;
         }
         if (Keyboard.D) {
-            px -= speed*deltaTime
+            px -= speed*deltaTime;
         }
         if (Keyboard.SPACE && isGrounded) {
             isGrounded = false;
-            py -= 1;
+            py -= jump;
         }
         if (Keyboard.SHIFT) {
             camera.posY -= speed*deltaTime
@@ -173,10 +174,10 @@ if (gl === null) {
         }
         
         let x = camera.posX;
-        camera.posX = x-(((px-x)*0.998)*(deltaTime*5));
+        camera.posX = x-(((px-x)*0.15)*(deltaTime*5));
         px = px-(((px-x)*1)*(deltaTime*5));
         let z = camera.posZ;
-        camera.posZ = z-(((pz-z)*0.998)*(deltaTime*5));
+        camera.posZ = z-(((pz-z)*0.15)*(deltaTime*5));
         pz = pz-(((pz-z)*1)*(deltaTime*5));
 
         if (camera.posY <= 0) {
@@ -227,11 +228,11 @@ if (gl === null) {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         drawCube(0,0,0);
         drawCube(0,1,1);
-        requestAnimationFrame(Render);
+        // requestAnimationFrame(Render);
     }
     Render();
 
-    // setInterval(() => {
-    //     Render();
-    // },10);
+    setInterval(() => {
+        Render();
+    },10);
 }
