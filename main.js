@@ -69,9 +69,9 @@ if (gl === null) {
     gl.useProgram(program);
 
     let camera = { // 2.5,1,-3
-        posX: 2.5,
-        posY: 1,
-        posZ: -3,
+        posX: 0,
+        posY: 0,
+        posZ: 1,
         rotateX: 0,
         rotateY: 0,
         rotateZ: 0,
@@ -137,7 +137,7 @@ if (gl === null) {
     }
 
     setInterval(() => {
-        document.getElementById("fps").textContent = `${Math.round(fps_n)}, ${deltaTime}ms`;
+        document.getElementById("fps").innerHTML = `${Math.round(fps_n)}, ${deltaTime}ms<br>Coords: ${camera.posX}, ${camera.posY}, ${camera.posZ}`;
     },500);
 
     let speed = 2.5;
@@ -179,7 +179,7 @@ if (gl === null) {
         if (Keyboard.R) {
             camera.posX = 0;
             camera.posY = 0;
-            camera.posZ = -1;
+            camera.posZ = 1;
             camera.rotX = 0;
             camera.rotY = 0;
             camera.rotZ = 0;
@@ -200,11 +200,14 @@ if (gl === null) {
         controls(deltaTime);
         const modelViewMatrix = mat4.create();
         const projectionMatrix = mat4.create();
-
-        mat4.rotateX(modelViewMatrix, modelViewMatrix, degToRad(camera.rotateX));
-        mat4.rotateY(modelViewMatrix, modelViewMatrix, degToRad(camera.rotateY));
+        // camera.rotateX = -45;
+        // camera.rotateY = 45;
+        // camera.rotateZ = 45;
+        mat4.rotateX(modelViewMatrix, modelViewMatrix, degToRad(-camera.rotateX));
+        mat4.rotateY(modelViewMatrix, modelViewMatrix, degToRad(-camera.rotateY));
+        mat4.rotateZ(modelViewMatrix, modelViewMatrix, degToRad(camera.rotateZ));
         mat4.translate(modelViewMatrix, modelViewMatrix, [-camera.posX,-camera.posY,-camera.posZ]);
-        mat4.perspective(projectionMatrix, degToRad(45), camera.ratio, 0.1, 1.0);
+        mat4.perspective(projectionMatrix, degToRad(90), camera.ratio, 0.1, 100.0);
 
         gl.uniformMatrix4fv(uModelViewMatrix, false, modelViewMatrix);
         gl.uniformMatrix4fv(uProjectionViewMatrix, false, projectionMatrix);
@@ -212,6 +215,9 @@ if (gl === null) {
         // console.log(modelViewMatrix);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         drawCube(0,0,0);
-        drawCube(0,1,1);
-    },10);
+        drawCube(0,0,1);
+        // drawCube(0,1,1);
+        // drawCube(1,1,1);
+        // drawCube(0,2,1);
+    },0);
 }

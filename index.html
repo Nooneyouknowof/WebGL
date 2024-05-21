@@ -19,19 +19,11 @@
         varying vec3 pos;
 
         void main() {
-            float size = 10.;
-            vec4 position = vec4(aPosition, size);
-            float FOV = uCameraFOV;
-            position.xy = position.xy * 2. - 1.;
-            //position.xy *= size;
-            //position.z /= (size/2.);
-            //position.x = position.x/uCameraRatio;
-            position.xy = position.xy*FOV/position.z*FOV;
-            pos = (uProjectionViewMatrix * uModelViewMatrix * vec4(aPosition,1.0)).xyz;
-            
-            //pos = (uModelViewMatrix * vec4(position.xyz, 1.0)).xyz;
-            //gl_Position = uProjectionViewMatrix * vec4(pos, 1.0);
-            gl_Position = position;
+            vec4 position = vec4(aPosition, 1.0);
+            position.xyz = position.xyz * 2. - 1.;
+            //position = uProjectionViewMatrix * uModelViewMatrix * position;
+            pos = position.xyz;
+            gl_Position = uProjectionViewMatrix * uModelViewMatrix * position;
         }
     </script>
     <script type="x-shader/x-fragment" id="fragment">
@@ -40,8 +32,7 @@
         varying vec3 pos;
 
         void main() {
-            gl_FragColor = vec4(pos.x,pos.y,1.-pos.z,1.0);
-            //gl_FragColor = vec4(1.0,1.0,1.0,1.0);
+            gl_FragColor = vec4(pos.x,pos.y,pos.z,1.0);
         }
     </script>
     <script type="text/javascript" src="main.js" defer></script>
