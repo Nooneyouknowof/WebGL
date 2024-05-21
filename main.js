@@ -38,9 +38,9 @@ if (gl === null) {
     canvas.addEventListener("click", async () => {
         await canvas.requestPointerLock({unadjustedMovement: true});
         document.addEventListener("mousemove", (event) => {
-            if (!Settings.locked) {
-                camera.rotateX += (event.movementX/camera.ratio)*Settings.sensitivity;
-                camera.rotateY += (event.movementY/camera.ratio)*Settings.sensitivity;
+            if (Settings.locked) {
+                camera.rotateX -= (event.movementX/camera.ratio)*Settings.sensitivity;
+                camera.rotateY -= (event.movementY/camera.ratio)*Settings.sensitivity;
                 console.log(event.movementX, event.movementY);
             }
         });
@@ -54,25 +54,6 @@ if (gl === null) {
         arg = modulo(arg,360);
         return arg;
     }
-
-    // let p_event = {};
-    // let sens = 100;
-    // let rotateX = 0;
-    // let rotateY = 0;
-    // let rotateZ = 0;
-    // document.addEventListener("mousemove", function(event) {
-    //     let mousemoveX = ((event.x-p_event.x)*sens/width)/degToRad(camera.FOV);
-    //     let mousemoveY = ((event.y-p_event.y)*sens/height)/degToRad(camera.FOV);
-    //     mousemoveX = mousemoveX?mousemoveX:0;
-    //     mousemoveY = mousemoveY?mousemoveY:0;
-    //     p_event = event;
-    //     rotateX += mousemoveX;
-    //     rotateY += mousemoveY;
-    //     camera.rotateX = -deg(rotateX);
-    //     camera.rotateY = -deg(rotateY);
-    //     // console.log(rotateX, deg(rotateX));
-    //     // console.log(camera.rotateX,camera.rotateY,camera.rotateZ);
-    // })
 
     const vertexShader = gl.createShader(gl.VERTEX_SHADER);
     gl.shaderSource(vertexShader, vertexCode.trim());
