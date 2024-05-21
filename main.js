@@ -9,8 +9,19 @@ const canvas = document.getElementById("screen");
 const gl = canvas.getContext("webgl2");
 let Keyboard = {};
 let Settings = {
-    "locked": false,
+    locked: false,
+    sensitivity: 1,
 };
+let camera = {
+    posX: 0,
+    posY: 0,
+    posZ: 1,
+    rotateX: 0,
+    rotateY: 0,
+    rotateZ: 0,
+    FOV: 45,
+    ratio: 1
+}
 let deltaTime = 0;
 let width = 0;
 let height = 0;
@@ -26,6 +37,13 @@ if (gl === null) {
     });
     canvas.addEventListener("click", async () => {
         await canvas.requestPointerLock({unadjustedMovement: true});
+        document.addEventListener("mousemove", (event) => {
+            if (!Settings.locked) {
+                camera.rotateX += (event.movementX/camera.ratio)*Settings.sensitivity;
+                camera.rotateY += (event.movementY/camera.ratio)*Settings.sensitivity;
+                console.log(event.movementX, event.movementY);
+            }
+        });
     });
     document.addEventListener("pointerlockchange", () => {Settings.locked = !Settings.locked});
 
@@ -37,24 +55,24 @@ if (gl === null) {
         return arg;
     }
 
-    let p_event = {};
-    let sens = 100;
-    let rotateX = 0;
-    let rotateY = 0;
-    let rotateZ = 0;
-    document.addEventListener("mousemove", function(event) {
-        let mousemoveX = ((event.x-p_event.x)*sens/width)/degToRad(camera.FOV);
-        let mousemoveY = ((event.y-p_event.y)*sens/height)/degToRad(camera.FOV);
-        mousemoveX = mousemoveX?mousemoveX:0;
-        mousemoveY = mousemoveY?mousemoveY:0;
-        p_event = event;
-        rotateX += mousemoveX;
-        rotateY += mousemoveY;
-        camera.rotateX = -deg(rotateX);
-        camera.rotateY = -deg(rotateY);
-        // console.log(rotateX, deg(rotateX));
-        // console.log(camera.rotateX,camera.rotateY,camera.rotateZ);
-    })
+    // let p_event = {};
+    // let sens = 100;
+    // let rotateX = 0;
+    // let rotateY = 0;
+    // let rotateZ = 0;
+    // document.addEventListener("mousemove", function(event) {
+    //     let mousemoveX = ((event.x-p_event.x)*sens/width)/degToRad(camera.FOV);
+    //     let mousemoveY = ((event.y-p_event.y)*sens/height)/degToRad(camera.FOV);
+    //     mousemoveX = mousemoveX?mousemoveX:0;
+    //     mousemoveY = mousemoveY?mousemoveY:0;
+    //     p_event = event;
+    //     rotateX += mousemoveX;
+    //     rotateY += mousemoveY;
+    //     camera.rotateX = -deg(rotateX);
+    //     camera.rotateY = -deg(rotateY);
+    //     // console.log(rotateX, deg(rotateX));
+    //     // console.log(camera.rotateX,camera.rotateY,camera.rotateZ);
+    // })
 
     const vertexShader = gl.createShader(gl.VERTEX_SHADER);
     gl.shaderSource(vertexShader, vertexCode.trim());
@@ -78,17 +96,6 @@ if (gl === null) {
         throw gl.getProgramInfoLog(program);
     }
     gl.useProgram(program);
-
-    let camera = {
-        posX: 0,
-        posY: 0,
-        posZ: 1,
-        rotateX: 0,
-        rotateY: 0,
-        rotateZ: 0,
-        FOV: 45,
-        ratio: 1
-    }
 
     function degToRad(d) {
         return d * Math.PI / 180;
@@ -237,11 +244,11 @@ if (gl === null) {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         drawCube(0,0,0);
         drawCube(0,1,1);
-        // requestAnimationFrame(Render);
+        requestAnimationFrame(Render);
     }
     Render();
 
-    setInterval(() => {
-        Render();
-    },0);
+    // setInterval(() => {
+    //     Render();
+    // },0);
 }
