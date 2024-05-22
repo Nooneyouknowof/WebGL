@@ -16,9 +16,9 @@ let camera = {
     posX: 0,
     posY: 0,
     posZ: 1,
-    rotateX: 0,
-    rotateY: 0,
-    rotateZ: 0,
+    yaw: 0,
+    pitch: 0,
+    roll: 0,
     FOV: 45,
     ratio: 1
 }
@@ -35,25 +35,16 @@ if (gl === null) {
     document.addEventListener("keydown", (event) => {
         if (!event.repeat) {Keyboard[event.key.toUpperCase().replace(" ", "SPACE")] = true}
     });
-    canvas.addEventListener("click", async () => {
-        await canvas.requestPointerLock({unadjustedMovement: true});
+    canvas.addEventListener("click", () => {
+        canvas.requestPointerLock({unadjustedMovement: true});
         document.addEventListener("mousemove", (event) => {
             if (Settings.locked) {
-                camera.rotateX -= (event.movementX/camera.ratio)*Settings.sensitivity;
-                camera.rotateY -= (event.movementY/camera.ratio)*Settings.sensitivity;
-                console.log(event.movementX, event.movementY);
+                camera.yaw -= (event.movementX/camera.ratio)*(Settings.sensitivity/4);
+                camera.pitch -= (event.movementY/camera.ratio)*(Settings.sensitivity/4);
             }
         });
     });
     document.addEventListener("pointerlockchange", () => {Settings.locked = !Settings.locked});
-
-    function modulo(n,d) {
-        return ((n % d) + d) % d
-    }
-    function deg(arg) {
-        arg = modulo(arg,360);
-        return arg;
-    }
 
     const vertexShader = gl.createShader(gl.VERTEX_SHADER);
     gl.shaderSource(vertexShader, vertexCode.trim());
@@ -147,19 +138,25 @@ if (gl === null) {
     let px = camera.posX;
     let py = camera.posY;
     let pz = camera.posZ;
+    function vecZnormal(speed, deg) {return speed*Math.sin(degToRad(deg))};
+    function vecXnormal(speed, deg) {return speed*Math.cos(degToRad(deg))};
     function controls(deltaTime) {
         let speed = Keyboard.CONTROL?sprintspeed:walkspeed;
         if (Keyboard.W) {
-            pz += speed*deltaTime;
+            pz += vecZnormal(speed, camera.yaw+90)*deltaTime;
+            px += vecXnormal(speed, camera.yaw-90)*deltaTime;
         }
         if (Keyboard.A) {
-            px += speed*deltaTime;
+            px += vecZnormal(speed, camera.yaw+90)*deltaTime;
+            pz += vecXnormal(speed, camera.yaw+90)*deltaTime;
         }
         if (Keyboard.S) {
-            pz -= speed*deltaTime;
+            pz -= vecZnormal(speed, camera.yaw+90)*deltaTime;
+            px -= vecXnormal(speed, camera.yaw-90)*deltaTime;
         }
         if (Keyboard.D) {
-            px -= speed*deltaTime;
+            px -= vecZnormal(speed, camera.yaw+90)*deltaTime;
+            pz -= vecXnormal(speed, camera.yaw+90)*deltaTime;
         }
         if (Keyboard.SPACE && isGrounded) {
             isGrounded = false;
@@ -193,9 +190,9 @@ if (gl === null) {
             py = camera.posY;
             camera.posZ = 1;
             pz = camera.posZ;
-            camera.rotX = 0;
-            camera.rotY = 0;
-            camera.rotZ = 0;
+            camera.yaw = 0;
+            camera.pitch = 0;
+            camera.roll = 0;
         }
     }
 
@@ -210,12 +207,12 @@ if (gl === null) {
         controls(deltaTime);
         const modelViewMatrix = mat4.create();
         const projectionMatrix = mat4.create();
-        // camera.rotateX = -45;
-        // camera.rotateY = 45;
-        // camera.rotateZ = 45;
-        mat4.rotateX(modelViewMatrix, modelViewMatrix, degToRad(-camera.rotateY));
-        mat4.rotateY(modelViewMatrix, modelViewMatrix, degToRad(-camera.rotateX));
-        mat4.rotateZ(modelViewMatrix, modelViewMatrix, degToRad(-camera.rotateZ));
+        // camera.yaw = -45;
+        // camera.pitch = 45;
+        // camera.roll = 45;
+        mat4.rotateX(modelViewMatrix, modelViewMatrix, degToRad(-camera.pitch));
+        mat4.rotateY(modelViewMatrix, modelViewMatrix, degToRad(-camera.yaw));
+        mat4.rotateZ(modelViewMatrix, modelViewMatrix, degToRad(-camera.roll));
         mat4.translate(modelViewMatrix, modelViewMatrix, [-camera.posX,-camera.posY,-camera.posZ]);
         mat4.perspective(projectionMatrix, degToRad(camera.FOV), camera.ratio, 0.1, Infinity);     
 
