@@ -8,11 +8,11 @@ console.log(fragmentCode);
 const canvas = document.getElementById("screen");
 const gl = canvas.getContext("webgl2");
 let Keyboard = {};
-let Settings = {
+let Settings = localStorage.getItem("settings")?JSON.parse(localStorage.getItem("settings")):{
     locked: false,
     sensitivity: 1,
 };
-let camera = {
+let camera = localStorage.getItem("camera")?JSON.parse(localStorage.getItem("camera")):{
     posX: 0,
     posY: 0,
     posZ: 1,
@@ -29,22 +29,22 @@ let height = 0;
 if (gl === null) {
     alert("Unable to initialize WebGL2. Your browser or machine may not support it.");
 } else {
-    document.addEventListener("keyup", (event) => {
+    document.addEventListener("keyup", async event => {
         if (!event.repeat) {Keyboard[event.key.toUpperCase().replace(" ", "SPACE")] = false}
     });
-    document.addEventListener("keydown", (event) => {
+    document.addEventListener("keydown", async event => {
         if (!event.repeat) {Keyboard[event.key.toUpperCase().replace(" ", "SPACE")] = true}
     });
-    canvas.addEventListener("click", () => {
+    canvas.addEventListener("click", async () => {
         canvas.requestPointerLock({unadjustedMovement: true});
-        document.addEventListener("mousemove", (event) => {
-            if (Settings.locked) {
-                camera.yaw -= (event.movementX/camera.ratio)*(Settings.sensitivity/4);
-                camera.pitch -= (event.movementY/camera.ratio)*(Settings.sensitivity/4);
-            }
-        });
     });
-    document.addEventListener("pointerlockchange", () => {Settings.locked = !Settings.locked});
+    document.addEventListener("mousemove", async event => {
+        if (Settings.locked) {
+            camera.yaw -= (event.movementX/camera.ratio)*(Settings.sensitivity/4);
+            camera.pitch -= (event.movementY/camera.ratio)*(Settings.sensitivity/4);
+        }
+    });
+    document.addEventListener("pointerlockchange", async () => {Settings.locked = document.pointerLockElement?true:false});
 
     const vertexShader = gl.createShader(gl.VERTEX_SHADER);
     gl.shaderSource(vertexShader, vertexCode.trim());
@@ -73,23 +73,18 @@ if (gl === null) {
         return d * Math.PI / 180;
     }
 
-    const aCameraFOV = gl.getUniformLocation(program, "uCameraFOV");
-    const aCameraRatio = gl.getUniformLocation(program, "uCameraRatio");
-
-    function resizeCanvas() {
+    async function resizeCanvas() {
         width = window.innerWidth;
         height = window.innerHeight;
         canvas.width = width;
         canvas.height = height;
         camera.ratio = width/height;
         gl.viewport(0, 0, canvas.width, canvas.height);
-        gl.uniform1f(aCameraFOV, degToRad(camera.FOV));
-        gl.uniform1f(aCameraRatio, camera.ratio);
     }
-    window.addEventListener("resize", event => {if (!event.repeat) {resizeCanvas()}});
+    window.addEventListener("resize", async event => {if (!event.repeat) {resizeCanvas()}});
     resizeCanvas();
 
-    function drawTriangle(vertices,isInverted) {
+    async function drawTriangle(vertices,isInverted) {
         let vertexData = new Float32Array(vertices?.flat());
         let positionBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
@@ -101,13 +96,13 @@ if (gl === null) {
         gl.drawArrays(gl.TRIANGLES, isInverted?0:1, vertices.length);
     }
 
-    function drawQuad(a,b,c,d) {
+    async function drawQuad(a,b,c,d) {
         // drawTriangle([b,d,c],true);
         // drawTriangle([d,b,a],true);
         drawTriangle([b,d,c,d,b,a],true);
     }
 
-    function drawCube(x,y,z) {
+    async function drawCube(x,y,z) {
         drawQuad([x-0.5,y-0.5,z+0.5],[x+0.5,y-0.5,z+0.5],[x+0.5,y+0.5,z+0.5],[x-0.5,y+0.5,z+0.5]);// Back
         drawQuad([x-0.5,y-0.5,z-0.5],[x+0.5,y-0.5,z-0.5],[x+0.5,y-0.5,z+0.5],[x-0.5,y-0.5,z+0.5]);// Bottom
         drawQuad([x-0.5,y+0.5,z+0.5],[x+0.5,y+0.5,z+0.5],[x+0.5,y+0.5,z-0.5],[x-0.5,y+0.5,z-0.5]);// Top
@@ -118,7 +113,7 @@ if (gl === null) {
 
     let p_time = new Date().getTime();
     let fps_n = 0;
-    function fps() {
+    async function fps() {
         let c_time = new Date().getTime();
         let time = c_time-p_time;
         p_time = c_time;
@@ -126,12 +121,14 @@ if (gl === null) {
         return time;
     }
 
-    setInterval(() => {
+    setInterval(async () => {
         document.getElementById("fps").innerHTML = `${Math.round(fps_n)}, ${deltaTime}ms<br>Coords: ${Math.round(camera.posX)}, ${Math.round(camera.posY)}, ${Math.round(camera.posZ)}`;
-    },500);
+        localStorage.setItem("camera", JSON.stringify(camera));
+        localStorage.setItem("settings", JSON.stringify(Settings));
+    },50);
 
     let walkspeed = 10;
-    let sprintspeed = 20;
+    let sprintspeed = 100;
     let jump = 1.15;
     let gravity = 0.5;
     let isGrounded = false;
@@ -140,7 +137,7 @@ if (gl === null) {
     let pz = camera.posZ;
     function vecZnormal(speed, deg) {return speed*Math.sin(degToRad(deg))};
     function vecXnormal(speed, deg) {return speed*Math.cos(degToRad(deg))};
-    function controls(deltaTime) {
+    async function controls(deltaTime) {
         let speed = Keyboard.CONTROL?sprintspeed:walkspeed;
         if (Keyboard.W) {
             pz += vecZnormal(speed, camera.yaw+90)*deltaTime;
@@ -202,14 +199,11 @@ if (gl === null) {
     const uModelViewMatrix = gl.getUniformLocation(program, "uModelViewMatrix");
     const uProjectionViewMatrix = gl.getUniformLocation(program, "uProjectionViewMatrix");
 
-    function Render() {
-        deltaTime = fps()/1000;
+    async function Render() {
+        deltaTime = await fps()/1000;
         controls(deltaTime);
         const modelViewMatrix = mat4.create();
         const projectionMatrix = mat4.create();
-        // camera.yaw = -45;
-        // camera.pitch = 45;
-        // camera.roll = 45;
         mat4.rotateX(modelViewMatrix, modelViewMatrix, degToRad(-camera.pitch));
         mat4.rotateY(modelViewMatrix, modelViewMatrix, degToRad(-camera.yaw));
         mat4.rotateZ(modelViewMatrix, modelViewMatrix, degToRad(-camera.roll));
@@ -222,11 +216,11 @@ if (gl === null) {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         drawCube(0,0,0);
         drawCube(0,1,1);
-        requestAnimationFrame(Render);
+        // requestAnimationFrame(Render);
     }
     Render();
 
-    // setInterval(() => {
-    //     Render();
-    // },0);
+    setInterval(async () => {
+        Render();
+    },0);
 }
