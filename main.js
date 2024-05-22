@@ -216,11 +216,12 @@ if (gl === null) {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         drawCube(0,0,0);
         drawCube(0,1,1);
-        // requestAnimationFrame(Render);
     }
-    Render();
 
-    setInterval(async () => {
+    const worker = new Worker('./loop.js');
+
+    worker.onmessage = async event => {
+        console.log(event);
         Render();
-    },0);
+    }
 }
